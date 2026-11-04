@@ -1,20 +1,17 @@
 <?php
 require "conexion.php";
 
-// Solo aceptamos datos que vengan del formulario
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: index.php");
     exit;
 }
 
-// 1. Recoger los datos y quitar espacios sobrantes
 $nombre   = trim($_POST["nombre"] ?? "");
 $email    = trim($_POST["email"] ?? "");
 $telefono = trim($_POST["telefono"] ?? "");
 $motivo   = trim($_POST["motivo"] ?? "");
 $mensaje  = trim($_POST["mensaje"] ?? "");
 
-// 2. Validar
 $errores = [];
 
 if ($nombre === "" || mb_strlen($nombre) > 100) {
@@ -23,11 +20,9 @@ if ($nombre === "" || mb_strlen($nombre) > 100) {
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errores[] = "Escribe un correo válido.";
 }
-// Reto 1: el teléfono es opcional, pero si se escribe debe tener solo números, espacios o +
 if ($telefono !== "" && !preg_match('/^\+?[0-9 ]{7,20}$/', $telefono)) {
     $errores[] = "El teléfono solo puede tener números, espacios y +.";
 }
-// Reto 2: el motivo debe ser uno de la lista
 if (!array_key_exists($motivo, $motivos)) {
     $errores[] = "Elige un motivo de la lista.";
 }
@@ -35,11 +30,10 @@ if (!array_key_exists($motivo, $motivos)) {
 $guardado = false;
 
 if (!$errores) {
-    // 3. Guardar con una consulta preparada (segura contra inyección SQL)
     $sql  = "INSERT INTO contactos (nombre, email, telefono, motivo, mensaje) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conexion->prepare($sql);
     $telefonoGuardar = $telefono === "" ? null : $telefono;
-    $stmt->bind_param("sssss", $nombre, $email, $telefonoGuardar, $motivo, $mensaje); // s = texto (string)
+    $stmt->bind_param("sssss", $nombre, $email, $telefonoGuardar, $motivo, $mensaje);
 
     if ($stmt->execute()) {
         $guardado = true;

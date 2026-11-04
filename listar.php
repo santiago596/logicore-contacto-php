@@ -1,17 +1,15 @@
 <?php
 require "conexion.php";
 
-// Reto 3: borrar un registro (llega por POST desde el botón "Borrar" de la tabla)
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["borrar"])) {
     $id = (int) $_POST["borrar"];
 
     $stmt = $conexion->prepare("DELETE FROM contactos WHERE id = ?");
-    $stmt->bind_param("i", $id);   // i = número entero
+    $stmt->bind_param("i", $id);
     $stmt->execute();
     $borrados = $stmt->affected_rows;
     $stmt->close();
 
-    // Redirige para que al recargar la página no se vuelva a enviar el borrado
     header("Location: listar.php?borrado=" . ($borrados > 0 ? $id : 0));
     exit;
 }
@@ -71,7 +69,6 @@ $resultado = $conexion->query(
                     <td><?= nl2br(htmlspecialchars($fila["mensaje"] ?? "")) ?></td>
                     <td><?= $fila["fecha"] ?></td>
                     <td>
-                        <!-- Reto 3: botón para borrar este registro -->
                         <form method="POST" onsubmit="return confirm('¿Borrar el mensaje de <?= htmlspecialchars(addslashes($fila["nombre"]), ENT_QUOTES) ?>?');">
                             <input type="hidden" name="borrar" value="<?= $fila["id"] ?>">
                             <button type="submit" class="borrar">Borrar</button>
